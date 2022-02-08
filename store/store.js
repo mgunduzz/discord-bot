@@ -73,16 +73,16 @@ module.exports = {
           ],
         });
 
-        let data = [
-          {
-            name: flagValue,
-            query,
-          },
-        ];
+        let data = [];
 
         for (const item of results) {
           data.push({name: item.Name, query: item.Query});
         }
+
+        data.push({
+          name: flagValue,
+          query,
+        });
 
         csvWriter.writeRecords(data).then(() => {
           __callback(flagValue);
