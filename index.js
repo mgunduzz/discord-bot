@@ -12,6 +12,7 @@ const disconnect = require('./_commands/disconnect');
 const skip = require('./_commands/skip');
 const shuffle = require('./_commands/shuffle');
 const queue = require('./_commands/queue');
+const guard = require('./_commands/guard');
 
 app.listen(process.env.PORT || 5000);
 
@@ -27,7 +28,6 @@ for (const file of commandFiles) {
 
 const __prefix = '.';
 const __playPrefix = __prefix + 'q';
-const __djRole = 'dj';
 
 console.log({__playPrefix});
 
@@ -83,48 +83,12 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  if (message.content == __prefix + 'n') skip.execute(player, message);
-  if (message.content == __prefix + 'dc') disconnect.execute(player, message);
-  if (message.content == __prefix + 'shuffle') shuffle.execute(player, message);
-  if (message.content == __prefix + 'que') queue.execute(player, message);
+  if (message.content == __prefix + 'n') guard.check(message).then(() => skip.execute(player, message));
+  if (message.content == __prefix + 'dc') guard.check(message).then(() => disconnect.execute(player, message));
+  if (message.content == __prefix + 'shuffle') guard.check(message).then(() => shuffle.execute(player, message));
+  if (message.content == __prefix + 'que') guard.check(message).then(() => queue.execute(player, message));
   else if (message.content.startsWith(__playPrefix)) {
-    let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == __djRole);
-
-    if (!djRole) {
-      await message.guild.roles.create({
-        name: __djRole,
-      });
-    }
-
-    let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == __djRole);
-
-    if (!allowAuthor) message.reply(`[${__djRole}] rolün yok.`);
-    else {
-      console.log(message.content);
-      // await message.guild.commands
-      //   .set(client.commands)
-      //   .then(() => {
-      //     message.reply('s.a');
-      //   })
-      //   .catch(err => {
-      //     message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
-      //     console.error(err);
-      //   });
-
-      if (!(message.member instanceof GuildMember) || !message.member.voice.channel) {
-        return void message.reply({
-          content: 'You are not in a voice channel!',
-          ephemeral: true,
-        });
-      }
-
-      if (message.guild.me.voice.channelId && message.member.voice.channelId !== message.guild.me.voice.channelId) {
-        return void message.reply({
-          content: 'You are not in my voice channel!',
-          ephemeral: true,
-        });
-      }
-
+    guard.check(message).then(() => {
       let _msg = message.content.replace(/\s\s+/g, ' ');
       let splits = _msg.split(' ').filter(o => o != __playPrefix);
 
@@ -137,7 +101,7 @@ client.on('messageCreate', async message => {
           } else message.reply('şarkı adı en az 3 harf olmalı...');
           break;
       }
-    }
+    });
   }
 });
 
