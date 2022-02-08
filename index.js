@@ -79,7 +79,8 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  if (message.content.startsWith(__prefix)) {
+  if (message.content == '@dc') disconnect.execute(player, message);
+  else if (message.content.startsWith(__prefix)) {
     let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == __djRole);
 
     if (!djRole) {
@@ -123,10 +124,6 @@ client.on('messageCreate', async message => {
       let query = splits.join(' ');
 
       switch (query) {
-        case 'dc':
-          disconnect.execute(player, message);
-          break;
-
         default:
           if (query.length >= 3) {
             play.execute(query, player, message);
