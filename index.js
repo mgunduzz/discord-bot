@@ -5,6 +5,8 @@ const config = require('./config.json');
 const {Player} = require('discord-player');
 const express = require('express');
 const app = express();
+const {QueryType} = require('discord-player');
+const play = require('./_commands/play');
 
 app.listen(process.env.PORT || 5000);
 
@@ -17,6 +19,10 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
+
+__prefix = '@q';
+
+console.log({__prefix});
 
 console.log(client.commands);
 
@@ -54,8 +60,8 @@ client.once('ready', async () => {
   console.log('Ready!');
 });
 
-client.on('ready', function() {
-  client.user.setActivity(config.activity, { type: config.activityType });
+client.on('ready', function () {
+  client.user.setActivity(config.activity, {type: config.activityType});
 });
 
 client.once('reconnecting', () => {
@@ -70,22 +76,29 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  console.log(message.member.roles);
-
   let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == 'dj');
 
-  if (message.content === '@qq' && allowAuthor) {
-    await message.guild.commands
-      .set(client.commands)
-      .then(() => {
-        message.reply('s.a');
-      })
-      .catch(err => {
-        message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
-        console.error(err);
-      });
-  } else {
-    message.reply('[dj] rolün yok.')
+  if (!allowAuthor) message.reply('[dj] rolün yok.');
+  else if (message.content.startsWith(__prefix)) {
+    console.log(message.content);
+    // await message.guild.commands
+    //   .set(client.commands)
+    //   .then(() => {
+    //     message.reply('s.a');
+    //   })
+    //   .catch(err => {
+    //     message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
+    //     console.error(err);
+    //   });
+
+    let _msg = message.content.replace(/\s\s+/g, ' ');
+    let splits = _msg.split(' ').filter(o => o != __prefix);
+
+    let query = splits.join(' ');
+
+    if (query.length >= 3) {
+      play.execute(query, player, message);
+    } else message.reply('en az 3 harf olmalı...');
   }
 });
 
