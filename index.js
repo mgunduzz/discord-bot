@@ -13,6 +13,7 @@ const skip = require('./_commands/skip');
 const shuffle = require('./_commands/shuffle');
 const queue = require('./_commands/queue');
 const guard = require('./_commands/guard');
+const store = require('./store/store');
 
 app.listen(process.env.PORT || 5000);
 
@@ -94,6 +95,7 @@ client.on('messageCreate', async message => {
     if (message.content == __prefix + 'dc') guardCheck(message, () => disconnect.execute(player, message));
     if (message.content == __prefix + 'shuffle') guardCheck(message, () => shuffle.execute(player, message));
     if (message.content == __prefix + 'que') guardCheck(message, () => queue.execute(player, message));
+    if (message.content == __prefix + 'list') guardCheck(message, () => store.read(player, message));
     else if (message.content.startsWith(__playPrefix)) {
       guardCheck(message, () => {
         let _msg = message.content.replace(/\s\s+/g, ' ');
