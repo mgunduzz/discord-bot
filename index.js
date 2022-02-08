@@ -95,7 +95,9 @@ client.on('messageCreate', async message => {
     if (message.content == __prefix + 'dc') guardCheck(message, () => disconnect.execute(player, message));
     if (message.content == __prefix + 'shuffle') guardCheck(message, () => shuffle.execute(player, message));
     if (message.content == __prefix + 'que') guardCheck(message, () => queue.execute(player, message));
-    if (message.content == __prefix + 'list') guardCheck(message, () => store.read(player, message));
+    if (message.content == __prefix + 'list') guardCheck(message, () => store.read(message));
+    if (message.content.startsWith(__prefix + 'open'))
+      guardCheck(message, () => store.open(message, query => play.execute(query, player, message)));
     else if (message.content.startsWith(__playPrefix)) {
       guardCheck(message, () => {
         let _msg = message.content.replace(/\s\s+/g, ' ');

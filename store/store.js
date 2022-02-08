@@ -3,6 +3,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const _fileName = 'liststore.csv';
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const play = require('../_commands/play');
 
 function readStore() {
   return new Promise((resolve, reject) => {
@@ -25,7 +26,26 @@ function readStore() {
 }
 
 module.exports = {
-  async read(player, message) {
+  async open(message, __callback) {
+    try {
+      let content = message.content.replace(/\s\s+/g, ' ');
+      let splits = content.split(' ');
+      let index = +splits[1];
+      readStore().then(results => {
+        if (results) {
+          let data = results[index];
+          if (data) {
+            __callback(data.Query);
+          } else {
+            throw 'bu indexte kayıt bulunamadı.';
+          }
+        }
+      });
+    } catch (error) {
+      message.reply(error.message);
+    }
+  },
+  async read(message) {
     readStore().then(results => {
       if (results) {
         let embeds = results.map((item, index) => `${index} - ${item.Name} - ${item.Query}`);
