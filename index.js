@@ -8,6 +8,7 @@ const app = express();
 const {QueryType} = require('discord-player');
 const play = require('./_commands/play');
 const {GuildMember} = require('discord.js');
+const disconnect = require('./_commands/disconnect');
 
 app.listen(process.env.PORT || 5000);
 
@@ -121,9 +122,17 @@ client.on('messageCreate', async message => {
 
       let query = splits.join(' ');
 
-      if (query.length >= 3) {
-        play.execute(query, player, message);
-      } else message.reply('en az 3 harf olmalı...');
+      switch (query) {
+        case 'dc':
+          disconnect.execute(player, message);
+          break;
+
+        default:
+          if (query.length >= 3) {
+            play.execute(query, player, message);
+          } else message.reply('şarkı adı en az 3 harf olmalı...');
+          break;
+      }
     }
   }
 });
