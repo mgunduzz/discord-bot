@@ -26,7 +26,7 @@ for (const file of commandFiles) {
   client.commands.set(command.name, command);
 }
 
-const __prefix = '.';
+const __prefix = '-';
 const __playPrefix = __prefix + 'q';
 
 console.log({__playPrefix});
@@ -79,29 +79,41 @@ client.once('disconnect', () => {
   console.log('Disconnect!');
 });
 
+guardCheck = (message, done) => {
+  guard.check(message).then(allow => {
+    if (allow) done();
+  });
+};
+
 client.on('messageCreate', async message => {
-  if (message.author.bot || !message.guild) return;
-  if (!client.application?.owner) await client.application?.fetch();
+  try {
+    if (message.author.bot || !message.guild) return;
+    if (!client.application?.owner) await client.application?.fetch();
 
-  if (message.content == __prefix + 'n') guard.check(message).then(() => skip.execute(player, message));
-  if (message.content == __prefix + 'dc') guard.check(message).then(() => disconnect.execute(player, message));
-  if (message.content == __prefix + 'shuffle') guard.check(message).then(() => shuffle.execute(player, message));
-  if (message.content == __prefix + 'que') guard.check(message).then(() => queue.execute(player, message));
-  else if (message.content.startsWith(__playPrefix)) {
-    guard.check(message).then(() => {
-      let _msg = message.content.replace(/\s\s+/g, ' ');
-      let splits = _msg.split(' ').filter(o => o != __playPrefix);
+    if (message.content == __prefix + 'n') guardCheck(message, () => skip.execute(player, message));
+    if (message.content == __prefix + 'dc') guardCheck(message, () => disconnect.execute(player, message));
+    if (message.content == __prefix + 'shuffle') guardCheck(message, () => shuffle.execute(player, message));
+    if (message.content == __prefix + 'que') guardCheck(message, () => queue.execute(player, message));
+    else if (message.content.startsWith(__playPrefix)) {
+      guardCheck(message, () => {
+        let _msg = message.content.replace(/\s\s+/g, ' ');
+        let splits = _msg.split(' ').filter(o => o != __playPrefix);
 
-      let query = splits.join(' ');
+        if (splits.length) {
+          let query = splits.join(' ');
 
-      switch (query) {
-        default:
-          if (query.length >= 3) {
-            play.execute(query, player, message);
-          } else message.reply('şarkı adı en az 3 harf olmalı...');
-          break;
-      }
-    });
+          switch (query) {
+            default:
+              if (query.length >= 3) {
+                play.execute(query, player, message);
+              } else message.reply('şarkı adı en az 3 harf olmalı...');
+              break;
+          }
+        }
+      });
+    }
+  } catch (error) {
+    message.reply(error.message);
   }
 });
 

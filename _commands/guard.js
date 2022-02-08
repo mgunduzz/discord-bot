@@ -2,7 +2,7 @@ const {GuildMember} = require('discord.js');
 const __djRole = 'dj';
 
 module.exports = {
-  async check(message) {
+  check(message) {
     return new Promise((resolve, reject) => {
       try {
         if (!(message.member instanceof GuildMember) || !message.member.voice.channel) {
@@ -11,7 +11,7 @@ module.exports = {
             ephemeral: true,
           });
 
-          reject();
+          resolve(false);
         }
 
         if (message.guild.me.voice.channelId && message.member.voice.channelId !== message.guild.me.voice.channelId) {
@@ -19,7 +19,7 @@ module.exports = {
             content: 'You are not in my voice channel!',
             ephemeral: true,
           });
-          reject();
+          resolve(false);
         }
 
         let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == __djRole);
@@ -27,20 +27,20 @@ module.exports = {
         if (!djRole) {
           message.guild.roles.create({
             name: __djRole,
-          });
+          }).then();
         }
 
         let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == __djRole);
 
         if (!allowAuthor) {
           message.reply(`[${__djRole}] rolün yok.`);
-          reject();
+          resolve(false);
         }
 
-        resolve();
+        resolve(true);
       } catch (error) {
         message.channel.send('hata => ' + error.message);
-        reject();
+        resolve(false);
       }
     });
   },
