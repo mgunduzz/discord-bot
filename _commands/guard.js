@@ -1,5 +1,5 @@
 const {GuildMember} = require('discord.js');
-const __djRole = 'dj';
+const __djRole = 'djMG';
 
 module.exports = {
   check(message) {
