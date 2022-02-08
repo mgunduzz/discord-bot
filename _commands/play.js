@@ -33,21 +33,22 @@ module.exports = {
       searchResult.playlist ? queue.addTracks(searchResult.tracks) : queue.addTrack(searchResult.tracks[0]);
       if (!queue.playing) await queue.play();
 
-      let flagSplit = flag.split(' ');
+      if (flag && flag.length) {
+        let flagSplit = flag.split(' ');
 
-      let flagCmd = flagSplit[0];
-      flagSplit.splice(0, 1);
-      let flagValue = flagSplit.join(' ');
+        let flagCmd = flagSplit[0];
+        flagSplit.splice(0, 1);
+        let flagValue = flagSplit.join(' ');
 
-      switch (flagCmd) {
-        case '--save':
-          store.saveToFile(query, flagValue, (name) => message.reply(`${name} adı ile kaydedildi.`));
-          break;
-      
-        default:
-          break;
+        switch (flagCmd) {
+          case '--save':
+            store.saveToFile(query, flagValue, name => message.reply(`${name} adı ile kaydedildi.`));
+            break;
+
+          default:
+            break;
+        }
       }
-
     } catch (error) {
       message.channel.send('hata => ' + error.message);
     }

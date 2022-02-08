@@ -42,6 +42,7 @@ module.exports = {
     });
   },
   async saveToFile(query, flagValue, __callback) {
+    if (!flagValue.length) return;
     readStore().then(results => {
       if (results) {
         const csvWriter = createCsvWriter({
