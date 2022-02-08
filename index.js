@@ -7,6 +7,7 @@ const express = require('express');
 const app = express();
 const {QueryType} = require('discord-player');
 const play = require('./_commands/play');
+const {GuildMember} = require('discord.js');
 
 app.listen(process.env.PORT || 5000);
 
@@ -76,29 +77,53 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == 'dj');
+  if (message.content.startsWith(__prefix)) {
+    let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == 'dj');
 
-  if (!allowAuthor) message.reply('[dj] rolün yok.');
-  else if (message.content.startsWith(__prefix)) {
-    console.log(message.content);
-    // await message.guild.commands
-    //   .set(client.commands)
-    //   .then(() => {
-    //     message.reply('s.a');
-    //   })
-    //   .catch(err => {
-    //     message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
-    //     console.error(err);
-    //   });
+    if (!djRole) {
+      await message.guild.roles.create({
+        name: 'dj',
+      });
+    }
 
-    let _msg = message.content.replace(/\s\s+/g, ' ');
-    let splits = _msg.split(' ').filter(o => o != __prefix);
+    let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == 'dj');
 
-    let query = splits.join(' ');
+    if (!allowAuthor) message.reply('[dj] rolün yok.');
+    else {
+      console.log(message.content);
+      // await message.guild.commands
+      //   .set(client.commands)
+      //   .then(() => {
+      //     message.reply('s.a');
+      //   })
+      //   .catch(err => {
+      //     message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
+      //     console.error(err);
+      //   });
 
-    if (query.length >= 3) {
-      play.execute(query, player, message);
-    } else message.reply('en az 3 harf olmalı...');
+      if (!(message.member instanceof GuildMember) || !message.member.voice.channel) {
+        return void message.reply({
+          content: 'You are not in a voice channel!',
+          ephemeral: true,
+        });
+      }
+
+      if (message.guild.me.voice.channelId && message.member.voice.channelId !== message.guild.me.voice.channelId) {
+        return void message.reply({
+          content: 'You are not in my voice channel!',
+          ephemeral: true,
+        });
+      }
+
+      let _msg = message.content.replace(/\s\s+/g, ' ');
+      let splits = _msg.split(' ').filter(o => o != __prefix);
+
+      let query = splits.join(' ');
+
+      if (query.length >= 3) {
+        play.execute(query, player, message);
+      } else message.reply('en az 3 harf olmalı...');
+    }
   }
 });
 
