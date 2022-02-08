@@ -70,7 +70,11 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  if (message.content === '@qq' && message.author.id === client.application?.owner?.id) {
+  console.log(message.member.roles);
+
+  let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == 'dj');
+
+  if (message.content === '@qq' && allowAuthor) {
     await message.guild.commands
       .set(client.commands)
       .then(() => {
@@ -80,6 +84,8 @@ client.on('messageCreate', async message => {
         message.reply('Could not deploy commands! Make sure the bot has the application.commands permission!');
         console.error(err);
       });
+  } else {
+    message.reply('[dj] rolün yok.')
   }
 });
 
