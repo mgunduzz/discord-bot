@@ -9,6 +9,7 @@ const {QueryType} = require('discord-player');
 const play = require('./_commands/play');
 const {GuildMember} = require('discord.js');
 const disconnect = require('./_commands/disconnect');
+const skip = require('./_commands/skip');
 
 app.listen(process.env.PORT || 5000);
 
@@ -22,10 +23,11 @@ for (const file of commandFiles) {
   client.commands.set(command.name, command);
 }
 
-__prefix = '@q';
-__djRole = 'dj';
+const __prefix = '.';
+const __playPrefix = __prefix + 'q';
+const __djRole = 'dj';
 
-console.log({__prefix});
+console.log({__playPrefix});
 
 console.log(client.commands);
 
@@ -79,8 +81,9 @@ client.on('messageCreate', async message => {
   if (message.author.bot || !message.guild) return;
   if (!client.application?.owner) await client.application?.fetch();
 
-  if (message.content == '@dc') disconnect.execute(player, message);
-  else if (message.content.startsWith(__prefix)) {
+  if (message.content == __prefix + 'n') skip.execute(player, message);
+  if (message.content == __prefix + 'dc') disconnect.execute(player, message);
+  else if (message.content.startsWith(__playPrefix)) {
     let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == __djRole);
 
     if (!djRole) {
@@ -119,7 +122,7 @@ client.on('messageCreate', async message => {
       }
 
       let _msg = message.content.replace(/\s\s+/g, ' ');
-      let splits = _msg.split(' ').filter(o => o != __prefix);
+      let splits = _msg.split(' ').filter(o => o != __playPrefix);
 
       let query = splits.join(' ');
 
