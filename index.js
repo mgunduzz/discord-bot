@@ -22,6 +22,7 @@ for (const file of commandFiles) {
 }
 
 __prefix = '@q';
+__djRole = 'dj';
 
 console.log({__prefix});
 
@@ -78,17 +79,17 @@ client.on('messageCreate', async message => {
   if (!client.application?.owner) await client.application?.fetch();
 
   if (message.content.startsWith(__prefix)) {
-    let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == 'dj');
+    let djRole = message.guild.roles.cache.map(o => o.name).find(o => o == __djRole);
 
     if (!djRole) {
       await message.guild.roles.create({
-        name: 'dj',
+        name: __djRole,
       });
     }
 
-    let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == 'dj');
+    let allowAuthor = message.member.roles.cache.map(o => o.name).find(o => o == __djRole);
 
-    if (!allowAuthor) message.reply('[dj] rolün yok.');
+    if (!allowAuthor) message.reply(`[${__djRole}] rolün yok.`);
     else {
       console.log(message.content);
       // await message.guild.commands
