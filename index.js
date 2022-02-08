@@ -100,12 +100,25 @@ client.on('messageCreate', async message => {
         let splits = _msg.split(' ').filter(o => o != __playPrefix);
 
         if (splits.length) {
-          let query = splits.join(' ');
+          let query = '';
+          let flag = '';
+
+          let writeToFlag = false;
+
+          for (const iterator of splits) {
+            if (iterator.includes('--')) writeToFlag = true;
+
+            if (writeToFlag) flag += ' ' + iterator;
+            else query += ' ' + iterator;
+          }
+
+          query = query.substring(1);
+          flag = flag.substring(1);
 
           switch (query) {
             default:
               if (query.length >= 3) {
-                play.execute(query, player, message);
+                play.execute(query, player, message, flag);
               } else message.reply('şarkı adı en az 3 harf olmalı...');
               break;
           }

@@ -1,6 +1,8 @@
+const store = require('../store/store');
+
 module.exports = {
   name: 'play',
-  async execute(query, player, message) {
+  async execute(query, player, message, flag) {
     try {
       const searchResult = await player
         .search(query, {
@@ -30,6 +32,22 @@ module.exports = {
       message.channel.send(`⏱ | Loading your ${searchResult.playlist ? 'playlist' : 'track'}...`);
       searchResult.playlist ? queue.addTracks(searchResult.tracks) : queue.addTrack(searchResult.tracks[0]);
       if (!queue.playing) await queue.play();
+
+      let flagSplit = flag.split(' ');
+
+      let flagCmd = flagSplit[0];
+      flagSplit.splice(0, 1);
+      let flagValue = flagSplit.join(' ');
+
+      switch (flagCmd) {
+        case '--save':
+          store.saveToFile(query, flagValue, (name) => message.reply(`${name} adı ile kaydedildi.`));
+          break;
+      
+        default:
+          break;
+      }
+
     } catch (error) {
       message.channel.send('hata => ' + error.message);
     }
