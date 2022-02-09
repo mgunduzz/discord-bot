@@ -15,6 +15,10 @@ const queue = require('./_commands/queue');
 const guard = require('./_commands/guard');
 const store = require('./store/store');
 
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ', err);
+});
+
 app.listen(process.env.PORT || 5000);
 
 const client = new Client();

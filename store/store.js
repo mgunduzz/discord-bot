@@ -38,7 +38,7 @@ module.exports = {
           if (data) {
             __callback(data.Query);
           } else {
-            throw 'bu indexte kayıt bulunamadı.';
+            message.reply('bu indexte kayıt bulunamadı.');
           }
         }
       });
