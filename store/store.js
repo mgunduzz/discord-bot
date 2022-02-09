@@ -4,6 +4,7 @@ const csv = require('csv-parser');
 const _fileName = 'liststore.csv';
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const play = require('../_commands/play');
+const query = require('express/lib/middleware/query');
 
 function readStore() {
   return new Promise((resolve, reject) => {
@@ -16,7 +17,7 @@ function readStore() {
           results.push(data);
         })
         .on('end', () => {
-          results = results.filter(o => o.Name.length);
+          results = results.filter(o => o.Name && o.Name.length);
           resolve(results);
         });
     } catch (error) {
@@ -45,6 +46,34 @@ module.exports = {
       message.reply(error.message);
     }
   },
+  async remove(message, __callback) {
+    try {
+      let content = message.content.replace(/\s\s+/g, ' ');
+      let splits = content.split(' ');
+      let index = +splits[1];
+      readStore().then(results => {
+        if (results) {
+          let data = results[index];
+          if (data) {
+            results = results.filter(o => o.Name != data.Name);
+
+            results = results.map(o => {
+              return {
+                name: o.Name,
+                query: o.Query,
+              };
+            });
+
+            this.saveListToFile(results, () => message.reply('başarıyla silindi...'));
+          } else {
+            message.reply('bu indexte kayıt bulunamadı.');
+          }
+        }
+      });
+    } catch (error) {
+      message.reply(error.message);
+    }
+  },
   async read(message) {
     readStore().then(results => {
       if (results) {
@@ -61,18 +90,24 @@ module.exports = {
       }
     });
   },
-  async saveToFile(query, flagValue, __callback) {
+  async saveListToFile(list, __callback) {
+    const csvWriter = createCsvWriter({
+      path: _fileName,
+      header: [
+        {id: 'name', title: 'Name'},
+        {id: 'query', title: 'Query'},
+      ],
+    });
+
+    csvWriter.writeRecords(list).then(() => {
+      if (__callback) __callback();
+      console.log('The CSV file was written successfully');
+    });
+  },
+  async saveQueryToFile(query, flagValue, __callback) {
     if (!flagValue.length) return;
     readStore().then(results => {
       if (results) {
-        const csvWriter = createCsvWriter({
-          path: _fileName,
-          header: [
-            {id: 'name', title: 'Name'},
-            {id: 'query', title: 'Query'},
-          ],
-        });
-
         let data = [];
 
         for (const item of results) {
@@ -84,9 +119,8 @@ module.exports = {
           query,
         });
 
-        csvWriter.writeRecords(data).then(() => {
+        this.saveListToFile(data, () => {
           __callback(flagValue);
-          console.log('The CSV file was written successfully');
         });
       }
     });

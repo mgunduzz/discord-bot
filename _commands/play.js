@@ -42,7 +42,7 @@ module.exports = {
 
         switch (flagCmd) {
           case '--save':
-            store.saveToFile(query, flagValue, name => message.reply(`${name} adı ile kaydedildi.`));
+            store.saveQueryToFile(query, flagValue, name => message.reply(`${name} adı ile kaydedildi.`));
             break;
 
           default:
