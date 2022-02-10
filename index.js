@@ -14,6 +14,7 @@ const shuffle = require('./_commands/shuffle');
 const queue = require('./_commands/queue');
 const guard = require('./_commands/guard');
 const store = require('./store/store');
+const request = require('./request/request');
 
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ', err);
@@ -104,6 +105,35 @@ client.on('messageCreate', async message => {
       guardCheck(message, () => store.open(message, query => play.execute(query, player, message)));
     else if (message.content.startsWith(__prefix + 'remove') || message.content.startsWith(__prefix + 'rm'))
       guardCheck(message, () => store.remove(message));
+    else if (message.content.startsWith(__prefix + 'makelist'))
+      guardCheck(message, async () => {
+        let content = message.content;
+        let splits = content.split(' ');
+        splits.splice(0, 1);
+
+        let query = splits.join(' ');
+
+        let track = await request.getTrack(query);
+        let list = await request.getRecommendTrackbyTrackId(track.id);
+
+        list.unshift(track);
+        let embeds = list.map((item, index) => `${item.artists[0].name} - ${item.name}`);
+
+        message.reply({
+          embeds: [
+            {
+              title: 'Önerilen Şarkılar',
+              description: embeds.join('\n'),
+            },
+          ],
+        });
+
+        let urlList = list.map(o => o.external_urls.spotify);
+
+        for (const url of urlList) {
+          play.execute(url, player, message);
+        }
+      });
     else if (message.content.startsWith(__playPrefix)) {
       guardCheck(message, () => {
         let _msg = message.content.replace(/\s\s+/g, ' ');
