@@ -15,12 +15,21 @@ const queue = require('./_commands/queue');
 const guard = require('./_commands/guard');
 const store = require('./store/store');
 const request = require('./request/request');
+const fetch = require("node-fetch");
 
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ', err);
 });
 
-app.listen(process.env.PORT || 5000);
+app.listen(process.env.PORT || 5000, () => {
+  app.get("/", (req, res, next) => {
+    res.json(true);
+   });
+
+   setTimeout(() => {
+    fetch('https://djgndz.herokuapp.com/').then(() => console.log(`Fetching ${'https://djgndz.herokuapp.com/'}.`)); 
+   }, (1000));
+});
 
 const client = new Client();
 client.commands = new Discord.Collection();
